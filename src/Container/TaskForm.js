@@ -90,11 +90,11 @@ class TaskForm extends React.Component {
     }
     updateState(){
       if(this.props.stateCopy.TaskToView){
-        this.state = {
+        this.setState({
             title:this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].title,
             text:this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].text,
             key:this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].key
-        };
+        });
       }
     }
       render(){
