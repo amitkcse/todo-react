@@ -1,3 +1,3 @@
 # ToDo
-# install dependencies by npm install
-Run by npm run
+install dependencies by npm install
+Run by npm start
