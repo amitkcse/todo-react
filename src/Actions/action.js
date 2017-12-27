@@ -2,14 +2,14 @@ module.exports={
   deleteTask : function(key){
     return{
       type: "DELETE_TASK",
-      index: key-1
+      key: key
 
     };
   },
   viewTask : function(key){
     return{
       type: "VIEW_TASK",
-      index: key-1
+      key: key
     };
   },
   addTask : function(title, text){
@@ -23,7 +23,7 @@ module.exports={
   updateTask: function(key,title,text){
     return {
     type: "UPDATE_TASK",
-    index: key-1,
+    key: key,
     title: title,
     text: text
   };
@@ -32,5 +32,17 @@ module.exports={
     return{
       type: "DISCARD_TASK"
     }
+  },
+  discardSearch : function(){
+    return {
+      type: "DISCARD_SEARCH"
+    }
+  },
+  searchTasks : function(searchText){
+    return {
+      type: "SEARCH_TASKS",
+      searchText : searchText
+    }
+
   }
 }

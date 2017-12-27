@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import configureStore from '../Stores/configureStore';
 import {connect} from 'react-redux';
-//import {deleteTask,addTask,updateTask,} from '../Actions/action';
 import * as action from '../Actions/action';
 import {bindActionCreators} from 'redux';
 
@@ -9,7 +8,6 @@ class TaskForm extends React.Component {
 
     constructor(props) {
         super(props);
-        console.log('taskform cons called');
          this.state = {
             title:'',
             text:'',
@@ -23,9 +21,9 @@ class TaskForm extends React.Component {
 
     componentWillReceiveProps(nextProps){
        if(nextProps.stateCopy.TaskToView)
-      console.log('cwrp called but not executed',nextProps.stateCopy.TaskToView, nextProps.stateCopy.Tasks, this.state)
+      console.log('cwrp called but not executed',nextProps.stateCopy.TaskToView, nextProps.stateCopy.Tasks, this.state);
       if(!(isNaN(nextProps.stateCopy.TaskToView))){
-        console.log('cwrp called',nextProps.stateCopy.TaskToView, nextProps.stateCopy.Tasks, this.state)
+        console.log('cwrp called',nextProps.stateCopy.TaskToView, nextProps.stateCopy.Tasks, this.state);
         this.setState({
             title:nextProps.stateCopy.Tasks[nextProps.stateCopy.TaskToView].title,
             text:nextProps.stateCopy.Tasks[nextProps.stateCopy.TaskToView].text,
@@ -81,12 +79,12 @@ class TaskForm extends React.Component {
   }
     discardTask(){
       console.log('in discard',this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].title)
-        //this.props.actions.deleteTask();
+        //this.props.actions.discardTask();
         this.setState({
             title:'',
             text:'',
             key:''
-        });
+        },()=>{this.props.actions.discardTask();});
     }
     updateState(){
       if(this.props.stateCopy.TaskToView){

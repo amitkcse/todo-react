@@ -11,6 +11,10 @@ class TaskList extends React.Component{
       this.deleteTask=this.deleteTask.bind(this);
       this.viewTask=this.viewTask.bind(this);
   }
+  discardSearch(){
+    console.log('discard search called in tasklist');
+     this.props.actions.discardSearch();
+  }
 
   deleteTask(key){
     this.props.actions.deleteTask(key);
@@ -19,11 +23,17 @@ class TaskList extends React.Component{
     this.props.actions.viewTask(key);
   }
     render(){
+       if(this.props.stateCopy.searchText){
+         console.log('inside if in tasklist ender')
+         var searchDiscard = <button className="btn btn-lg btn-primary " type="button" onClick={this.discardSearch.bind(this)}>
+                 <span className='glyphicon glyphicon-remove'></span></button>
+       }
         return(
 
              <div className="sidebar col-md-2">
+                {searchDiscard}
                 <ul className="list-group">
-                    {this.props.stateCopy.Tasks.map(task => (<Task task={task}
+                    {this.props.stateCopy.TaskListToView.map(task => (<Task task={task}
                       deleteTask={this.deleteTask} viewTask={this.viewTask} />))}
 
                 </ul>

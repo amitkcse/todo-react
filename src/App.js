@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import './css/dashboard.css';
+import Navbar from './Container/Navbar';
 import TaskForm from './Container/TaskForm.js';
 import TaskList from './Container/TaskList';
 import configureStore from './Stores/configureStore';
@@ -14,6 +15,7 @@ class App extends React.Component {
 
 
                       <div className='container'>
+                        <Navbar />
                         <TaskList/>
                         <TaskForm/>
 
