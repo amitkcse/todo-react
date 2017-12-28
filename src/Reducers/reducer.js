@@ -71,23 +71,22 @@ const taskReducer = ( state = iniState , action) => {
      var searchText= action.searchText;
      var searchResult =[];
      var TasksCopy = state.Tasks;
-     function searchTasks(searchTerm, Tasks){
-             for(var i=0;i<Tasks.length; i++){
-         if(Tasks[i].title.indexOf(searchTerm)  !== -1 || Tasks[i].text.indexOf(searchTerm)  !== -1 ){
-           console.log('in search tasks first condition');
-             if(searchResult.indexOf(Tasks[i]) == -1){
-               searchResult.push(Tasks[i]);
-             }
-            }
-           }
+     function searchTextInTasks(searchTerm, Tasks){
+       for(var i=0;i<Tasks.length; i++){
+        if(Tasks[i].title.indexOf(searchTerm)  !== -1 || Tasks[i].text.indexOf(searchTerm)  !== -1 ){
+         if(searchResult.indexOf(Tasks[i]) == -1){
+          searchResult.push(Tasks[i]);
+         }
+        }
+       }
       }
 
-      searchTasks(searchText, TasksCopy);
+      searchTextInTasks(searchText, TasksCopy);
       var searchTermsSplitted = searchText.split(' ');
       searchTermsSplitted.forEach(
         function(searchTermSplitted){
           if(searchTermSplitted.trim()){
-            searchTasks(searchTermSplitted, TasksCopy);
+            searchTextInTasks(searchTermSplitted, TasksCopy);
           }
           }
        )
