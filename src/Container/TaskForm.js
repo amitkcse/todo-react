@@ -1,130 +1,83 @@
-import React, { Component } from 'react';
-import configureStore from '../Stores/configureStore';
+import React from 'react';
 import {connect} from 'react-redux';
 import * as action from '../Actions/action';
 import {bindActionCreators} from 'redux';
+var axios = require('axios');
+var baseUrl = 'http://localhost:3051';
 
 class TaskForm extends React.Component {
 
-    constructor(props) {
-        super(props);
-         this.state = {
-            title:'',
-            text:'',
-            key:''
-        };
-        this.addTask=this.addTask.bind(this);
-        this.discardTask=this.discardTask.bind(this);
-        this.updateTask=this.updateTask.bind(this);
-
-    }
-
-    componentWillReceiveProps(nextProps){
-       if(nextProps.stateCopy.TaskToView)
-      console.log('cwrp called but not executed',nextProps.stateCopy.TaskToView, nextProps.stateCopy.Tasks, this.state);
-      if(!(isNaN(nextProps.stateCopy.TaskToView))){
-        console.log('cwrp called',nextProps.stateCopy.TaskToView, nextProps.stateCopy.Tasks, this.state);
-        this.setState({
-            title:nextProps.stateCopy.Tasks[nextProps.stateCopy.TaskToView].title,
-            text:nextProps.stateCopy.Tasks[nextProps.stateCopy.TaskToView].text,
-            key:nextProps.stateCopy.Tasks[nextProps.stateCopy.TaskToView].key
-        },()=>{console.log('state after cwrp set state is', this.state)})
-
-      }
-      if(nextProps.stateCopy.TaskToView=='del'){
-        this.setState({
-          title:'',
-          text:'',
-          key:''
-        },()=>{console.log('state after del set state is', this.state)})
-      }
-    }
-
-
     handleTextChange = event => {
-        this.setState({
-            title:this.state.title,
-            text: event.target.value,
-            key:this.state.key
-        });
+        this.props.actions.updateText(event.target.value);
     };
     handleTitleChange = event => {
-        this.setState({
-            title: event.target.value,
-            text:this.state.text,
-            key:this.state.key
-
-        })
+        this.props.actions.updateTitle(event.target.value);
     };
     addTask(){
-        if(!this.state.title=='' && !this.state.text==''){
-          this.props.actions.addTask(this.state.title, this.state.text);
-        this.setState({
-            title:'',
-            text:'',
-            key:''
-        });
-      } else alert("Both Title and Text field required")
-
+      if(!this.props.taskTitle == '' && !this.props.taskText == ''){
+        this.props.actions.changeLoadingState();
+        var task ={ title: this.props.taskTitle, text: this.props.taskText };
+        axios.post(baseUrl+'/add-task', task)
+             .then((response)=>{
+                this.props.actions.addTask(response.data.task);
+              })
+              .catch((error)=>{
+                alert('Someting wrong happened',error.response);
+              })
+        } else alert("Both Title and Text field required");
     }
     updateTask(){
-      if(!this.state.title=='' && !this.state.text==''){
-        this.props.actions.updateTask(this.state.key, this.state.title, this.state.text);
-        this.setState({
-            title:'',
-            text:'',
-            key:''
-        });
-    } else alert("Both Title and Text field required")
-  }
+    
+      if( !this.props._id =='' && !this.props.taskTitle == '' && !this.props.taskText == ''){
+        this.props.actions.changeLoadingState();
+        var task ={ title: this.props.taskTitle, text: this.props.taskText, _id: this.props._id };
+        axios.post(baseUrl+'/update-task', task)
+             .then((response)=>{
+                this.props.actions.updateTask(response.data.task);
+              })
+             .catch((error)=>{
+                alert('Someting wrong happened',error.response);
+              })
+        } else alert("Both Title and Text field required");
+    }
+
     discardTask(){
-      console.log('in discard',this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].title)
-        //this.props.actions.discardTask();
-        this.setState({
-            title:'',
-            text:'',
-            key:''
-        },()=>{this.props.actions.discardTask();});
+        this.props.actions.discardTask();
     }
-    updateState(){
-      if(this.props.stateCopy.TaskToView){
-        this.setState({
-            title:this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].title,
-            text:this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].text,
-            key:this.props.stateCopy.Tasks[this.props.stateCopy.TaskToView].key
-        });
-      }
-    }
-      render(){
-      if(this.state.key){
-        var divToShow=<div className='row'><button className="btn btn-lg btn-primary " type="button" onClick={this.updateTask.bind(this)}>Update Task</button>
-                                           <button className="btn btn-lg btn-primary " type="button" onClick={this.discardTask.bind(this)}>
-                                                   <span className='glyphicon glyphicon-remove'></span></button>
-                    </div>
-      }
-       else divToShow=<button className="btn btn-lg btn-primary " type="button" onClick={this.addTask.bind(this)}>Add Task</button>
+
+    render(){
+      if(this.props._id){
+        var divToShow = <div className='row'><button className="btn btn-lg btn-primary "
+            type="button" onClick={this.updateTask.bind(this)}>Update Task</button>
+           <button className="btn btn-lg btn-primary " type="button" onClick={this.discardTask.bind(this)}>
+             <span className='glyphicon glyphicon-remove'></span></button>
+        </div>
+       }
+       else divToShow = <button className="btn btn-lg btn-primary " type="button"
+                  onClick={this.addTask.bind(this)}>Add Task</button>
       return(
 
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <form class="form-signin form-group">
-            <label for="taskName" className="sr-only">Task Title</label>
-              <input type="text" id="taskName" className="form-control" placeholder="Task Title" required
-               onChange={this.handleTitleChange} value={this.state.title}/>
-           <input type="hidden" id="taskKey" value={this.state.key} />
-           <label for="taskDesc" className="sr-only">Description</label>
-              <textarea id="taskDesc" classNmae="form-control" rows="10" placeholder="Your Task Description Here"
-               onChange={this.handleTextChange} value={this.state.text}> </textarea>
+        <div className="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <form className="form-signin form-group">
+            <label htmlFor="taskName" className="sr-only">Task Title</label>
+            <input type="text" id="taskName" className="form-control" placeholder="Task Title"
+               onChange={this.handleTitleChange} value={this.props.taskTitle}/>
+            <input type="hidden" id="taskKey" value={this.props._id} />
+            <label htmlFor="taskDesc" className="sr-only">Description</label>
+            <textarea id="taskDesc" className="form-control" rows="10" placeholder="Your Task Description Here"
+               onChange={this.handleTextChange} value={this.props.taskText}> </textarea>
 
-                </form>
-                 {divToShow}
-            </div>
-
+          </form>
+          {divToShow}
+        </div>
       )
     }
 }
 function mapStateToProps(state){
     return {
-      stateCopy:state.tasks
+      taskTitle: state.tasks.taskTitle,
+      taskText:  state.tasks.taskText,
+      _id     : state.tasks._id
     }
 }
 function mapDispatchToProps(dispatch){

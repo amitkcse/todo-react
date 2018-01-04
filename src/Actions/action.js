@@ -1,31 +1,39 @@
 module.exports={
-  deleteTask : function(key){
+  changeLoadingState: function(){
+    return{
+      type:  "CHANGE_LOADING_STATE"
+    }
+  },
+  deleteTask : function(_id){
     return{
       type: "DELETE_TASK",
-      key: key
+      _id: _id
 
     };
   },
-  viewTask : function(key){
+  loadAllTask : function(taskData){
+    return {
+      type: "LOAD_TASK",
+      taskData: taskData
+    }
+  },
+  viewTask : function(_id){
     return{
       type: "VIEW_TASK",
-      key: key
+      _id: _id
     };
   },
-  addTask : function(title, text){
+  addTask : function(task){
     return {
     type: "ADD_TASK",
-    title: title,
-    text: text
+    task: task
   };
 
   },
-  updateTask: function(key,title,text){
+  updateTask: function(task){
     return {
     type: "UPDATE_TASK",
-    key: key,
-    title: title,
-    text: text
+    task: task
   };
 },
   discardTask : function(){
@@ -43,6 +51,17 @@ module.exports={
       type: "SEARCH_TASKS",
       searchText : searchText
     }
-
+  },
+  updateTitle : function(taskTitle){
+    return {
+      type: "UPDATE_TASK_TITLE",
+      taskTitle: taskTitle
+    }
+  },
+  updateText : function(taskText){
+    return {
+      type: "UPDATE_TASK_TEXT",
+      taskText: taskText
+    }
   }
 }

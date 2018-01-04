@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import configureStore from '../Stores/configureStore';
+import React from 'react';
 import {connect} from 'react-redux';
 import * as action from '../Actions/action';
 import {bindActionCreators} from 'redux';
@@ -11,8 +10,7 @@ class Navbar extends React.Component{
   };
 
  render(){
-   console.log('navbar rerender');
-   return(
+  return(
     <nav className="navbar navbar-inverse navbar-fixed-top" >
      <div className="container">
       <div className="navbar-header">

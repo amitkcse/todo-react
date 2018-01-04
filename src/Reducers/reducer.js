@@ -1,97 +1,110 @@
 import {combineReducers} from 'redux';
-var taskJSON=localStorage.taskjson;
-var taskData= taskJSON ?JSON.parse(taskJSON):[];
 
-var iniState={ 'Tasks':taskData, TaskListToView: taskData, 'TaskToView': 'no', searchText:'', searchResult: []};
-// function to search Task with key and return index of Task
-function searchTask(key, TasksCopy){
+
+var iniState = { Tasks:[], TaskListToView:[], taskTitle:'', taskText: '',
+                _id:'', searchText:'', searchResult: [], isLoading: true};
+
+function searchTask(_id, TasksCopy){
   for (var i=0; i < TasksCopy.length; i++) {
-      if (TasksCopy[i].key === key) {
-          return i;
-          break;
-      }
-  }
-}
+     if (TasksCopy[i]._id === _id) {
+      return i;
+     }
+   }
+ }
+
 
 const taskReducer = ( state = iniState , action) => {
  switch(action.type){
+   case "CHANGE_LOADING_STATE":
+     state={...state, isLoading:'true'};
+     break;
+
+  case "LOAD_TASK" :
+  var TaskCopy = action.taskData;
+  state = {...state, Tasks: TaskCopy, TaskListToView: TaskCopy, isLoading: 'false'};
+  break;
 
   case "DELETE_TASK" :
-    var TasksCopy = state.Tasks;
-    var taskIndex = searchTask(action.key, TasksCopy);
-    console.log('in delete index is', taskIndex,'and key is', action.key);
-    TasksCopy.splice(taskIndex, 1);
-    state = {...state, 'Tasks': TasksCopy, TaskListToView: TasksCopy ,TaskToView: 'del'};
-    localStorage.taskjson=JSON.stringify(state.Tasks);
-    break;
+   console.log('delete_task called', action);
+   var TasksCopy = state.Tasks;
+   var taskIndex = searchTask(action._id, TasksCopy);
+   TasksCopy.splice(taskIndex, 1);
+   state = {...state, Tasks: TasksCopy, taskTitle:'', taskText: '', _id:'', isLoading: 'false',
+   TaskListToView: TasksCopy, searchResult: []};
+   break;
 
   case "VIEW_TASK" :
-    var TasksCopy = state.Tasks;
-    var taskIndex = searchTask(action.key, TasksCopy);
-    state = {...state, 'TaskToView': taskIndex};
+    TasksCopy = state.Tasks;
+    taskIndex = searchTask(action._id, state.Tasks);
+    state = {...state, taskTitle:state.Tasks[taskIndex].title ,
+      taskText:state.Tasks[taskIndex].text , _id: state.Tasks[taskIndex]._id, isLoading: 'false' };
     break;
 
   case "ADD_TASK"  :
-   var task ={};
-   //task.key = state.Tasks.length+1;
-   task.key = '_'+(Math.random().toString(36).substr(2,9));
-   task.title = action.title;
-   task.text = action.text;
-   var TasksCopy = state.Tasks;
+   var task = action.task;
+   TasksCopy = state.Tasks;
    TasksCopy.push(task);
-   state = {...state, 'Tasks': TasksCopy,  TaskListToView: TasksCopy, TaskToView: 'no'};
-   localStorage.taskjson=JSON.stringify(state.Tasks);
-   break;
+   state = {...state, Tasks: TasksCopy, TaskListToView: TasksCopy,
+             taskTitle:'', taskText: '', isLoading: 'false' };
+
+      break;
 
   case "UPDATE_TASK" :
-    var task ={};
-    task.key = action.key;
-    task.title = action.title;
-    task.text = action.text;
-    var TasksCopy = state.Tasks;
-    var taskIndex = searchTask(action.key, TasksCopy);
-    TasksCopy[taskIndex]=task;
-    state = {...state, 'Tasks': TasksCopy, TaskListToView: TasksCopy, TaskToView: 'no'};
-    localStorage.taskjson=JSON.stringify(state.Tasks);
+   console.log('update_task called', action);
+    task =action.task;
+    TasksCopy = state.Tasks;
+    taskIndex = searchTask(task._id, TasksCopy);
+    TasksCopy[taskIndex] = task;
+    state = {...state, Tasks: TasksCopy, TaskListToView: TasksCopy,
+                     taskTitle:'', taskText: '', _id : '', isLoading: 'false'};
     break;
 
   case "DISCARD_TASK" :
-    state = { ...state, TaskToView:'no'};
-
+   console.log('discard_task called', action);
+    state = { ...state, taskTitle:'', taskText: '', _id : '', isLoading: 'false'};
     break;
-    default :
-     break;
+
+  case "UPDATE_TASK_TITLE" :
+       console.log('update_task_title', action);
+      var taskTitle=action.taskTitle;
+      state = { ...state, taskTitle: taskTitle, isLoading: 'false'};
+      console.log('in state taskTitle is', state.taskTitle)
+      break;
+
+  case "UPDATE_TASK_TEXT" :
+      var taskText = action.taskText;
+      state = { ...state, taskText : taskText};
+      break;
 
   case "DISCARD_SEARCH" :
-      console.log('discard search called in educer');
-      state ={ ...state, searchText: '',  TaskListToView: state.Tasks, searchResult: []};
+      state ={ ...state, searchText: '', TaskListToView: state.Tasks,
+               searchResult: []};
       break;
 
   case "SEARCH_TASKS" :
      var searchText= action.searchText;
      var searchResult =[];
-     var TasksCopy = state.Tasks;
+     TasksCopy = state.Tasks;
      function searchTextInTasks(searchTerm, Tasks){
        for(var i=0;i<Tasks.length; i++){
-        if(Tasks[i].title.indexOf(searchTerm)  !== -1 || Tasks[i].text.indexOf(searchTerm)  !== -1 ){
+        if(Tasks[i].title.indexOf(searchTerm)  !== -1 ||
+              Tasks[i].text.indexOf(searchTerm)  !== -1 ){
          if(searchResult.indexOf(Tasks[i]) == -1){
-          searchResult.push(Tasks[i]);
-         }
-        }
-       }
-      }
-
-      searchTextInTasks(searchText, TasksCopy);
-      var searchTermsSplitted = searchText.split(' ');
-      searchTermsSplitted.forEach(
+          searchResult.push(Tasks[i]); }}}}
+     searchTextInTasks(searchText, TasksCopy);
+     var searchTermsSplitted = searchText.split(' ');
+     searchTermsSplitted.forEach(
         function(searchTermSplitted){
           if(searchTermSplitted.trim()){
             searchTextInTasks(searchTermSplitted, TasksCopy);
           }
-          }
-       )
-       state ={ ...state, searchText: searchText, TaskListToView: searchResult, searchResult: searchResult};
-       console.log('search task', state)
+        })
+    state ={ ...state, searchText: searchText, TaskListToView: searchResult,
+              searchResult: searchResult};
+    break;
+
+    default :
+        break;
  }
    return state;
 }

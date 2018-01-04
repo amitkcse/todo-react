@@ -1,31 +1,51 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Task from '../Components/Task';
-import configureStore from '../Stores/configureStore';
-import {Provider} from 'react-redux';
 import {connect} from 'react-redux';
 import * as action from '../Actions/action';
 import {bindActionCreators} from 'redux';
+var axios = require('axios');
+var baseUrl = 'http://localhost:3051';
+
 class TaskList extends React.Component{
-  constructor(props) {
-      super(props);
-      this.deleteTask=this.deleteTask.bind(this);
-      this.viewTask=this.viewTask.bind(this);
-  }
-  discardSearch(){
-    console.log('discard search called in tasklist');
-     this.props.actions.discardSearch();
+  componentDidMount() {
+    this.loadAllTask();
   }
 
-  deleteTask(key){
-    this.props.actions.deleteTask(key);
+  discardSearch(){
+       this.props.actions.discardSearch();
   }
-  viewTask(key){
-    this.props.actions.viewTask(key);
+
+  loadAllTask(){
+    this.props.actions.changeLoadingState();
+    axios.post(baseUrl+'/view-tasks')
+        .then((response)=>{
+         var taskData= response.data ?response.data:[];
+         this.props.actions.loadAllTask(taskData);
+       })
+       .catch((error)=>{
+         alert('Someting wrong happened',error.response);
+       })
+  }
+
+  deleteTask(_id){
+    this.props.actions.changeLoadingState();
+    var taskId = {_id: _id};
+    axios.post(baseUrl+'/delete-task',taskId)
+         .then((response)=>{
+           this.props.actions.deleteTask(response.data.task._id);
+         })
+         .catch((error)=>{
+           alert('Someting wrong happened',error.response);
+         })
+  }
+
+  viewTask(_id){
+    this.props.actions.viewTask(_id);
   }
     render(){
-       if(this.props.stateCopy.searchText){
-         console.log('inside if in tasklist ender')
-         var searchDiscard = <button className="btn btn-lg btn-primary " type="button" onClick={this.discardSearch.bind(this)}>
+           if(this.props.stateCopy.searchText){
+               var searchDiscard = <button className="btn btn-lg btn-primary "
+                 type="button" onClick={this.discardSearch.bind(this)}>
                  <span className='glyphicon glyphicon-remove'></span></button>
        }
         return(
@@ -34,7 +54,7 @@ class TaskList extends React.Component{
                 {searchDiscard}
                 <ul className="list-group">
                     {this.props.stateCopy.TaskListToView.map(task => (<Task task={task}
-                      deleteTask={this.deleteTask} viewTask={this.viewTask} />))}
+                      deleteTask={this.deleteTask.bind(this)} viewTask={this.viewTask.bind(this)} />))}
 
                 </ul>
 
@@ -46,7 +66,9 @@ class TaskList extends React.Component{
 
 }
 function mapStateToProps(state){
-  return { stateCopy:state.tasks}
+  return {
+    stateCopy: state.tasks
+  }
 }
 function mapDispatchToProps(dispatch){
     return {
