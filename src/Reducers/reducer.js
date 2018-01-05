@@ -25,7 +25,6 @@ const taskReducer = ( state = iniState , action) => {
   break;
 
   case "DELETE_TASK" :
-   console.log('delete_task called', action);
    var TasksCopy = state.Tasks;
    var taskIndex = searchTask(action._id, TasksCopy);
    TasksCopy.splice(taskIndex, 1);

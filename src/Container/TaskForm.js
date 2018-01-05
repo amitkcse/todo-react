@@ -1,11 +1,31 @@
 import React from 'react';
+import { socketConnect } from 'socket.io-react';
 import {connect} from 'react-redux';
 import * as action from '../Actions/action';
 import {bindActionCreators} from 'redux';
 var axios = require('axios');
 var baseUrl = 'http://localhost:3051';
 
+
 class TaskForm extends React.Component {
+    constructor(props){
+      super(props);
+      this.props.socket.on('task-added', (createdTask) => {
+        this.props.actions.addTask(createdTask);
+        if(this.props.searchText){
+          this.props.actions.searchTasks(this.props.searchText);
+        }
+      })
+      this.props.socket.on('task-updated', (updatedTask) => {
+        this.props.actions.updateTask(updatedTask);
+        if(this.props.searchText){
+          this.props.actions.searchTasks(this.props.searchText);
+        }
+
+      })
+    }
+
+
 
     handleTextChange = event => {
         this.props.actions.updateText(event.target.value);
@@ -13,31 +33,22 @@ class TaskForm extends React.Component {
     handleTitleChange = event => {
         this.props.actions.updateTitle(event.target.value);
     };
+
+
     addTask(){
-      if(!this.props.taskTitle == '' && !this.props.taskText == ''){
-        this.props.actions.changeLoadingState();
-        var task ={ title: this.props.taskTitle, text: this.props.taskText };
-        axios.post(baseUrl+'/add-task', task)
-             .then((response)=>{
-                this.props.actions.addTask(response.data.task);
-              })
-              .catch((error)=>{
-                alert('Someting wrong happened',error.response);
-              })
-        } else alert("Both Title and Text field required");
+       if(!this.props.taskTitle == '' && !this.props.taskText == ''){
+         this.props.actions.changeLoadingState();
+         var data ={ title: this.props.taskTitle, text: this.props.taskText };
+         console.log('add-task called')
+         this.props.socket.emit('add-task', data);
+       }else alert("Both Title and Text field required");
     }
     updateTask(){
-    
       if( !this.props._id =='' && !this.props.taskTitle == '' && !this.props.taskText == ''){
         this.props.actions.changeLoadingState();
-        var task ={ title: this.props.taskTitle, text: this.props.taskText, _id: this.props._id };
-        axios.post(baseUrl+'/update-task', task)
-             .then((response)=>{
-                this.props.actions.updateTask(response.data.task);
-              })
-             .catch((error)=>{
-                alert('Someting wrong happened',error.response);
-              })
+        var data ={ title: this.props.taskTitle, text: this.props.taskText, _id: this.props._id };
+        this.props.socket.emit('update-task', data);
+      
         } else alert("Both Title and Text field required");
     }
 
@@ -77,7 +88,8 @@ function mapStateToProps(state){
     return {
       taskTitle: state.tasks.taskTitle,
       taskText:  state.tasks.taskText,
-      _id     : state.tasks._id
+      _id     : state.tasks._id,
+      searchText: state.tasks.searchText
     }
 }
 function mapDispatchToProps(dispatch){
@@ -87,4 +99,4 @@ function mapDispatchToProps(dispatch){
 }
 
 
-export default connect(mapStateToProps,mapDispatchToProps)(TaskForm);
+export default socketConnect(connect(mapStateToProps,mapDispatchToProps)(TaskForm));

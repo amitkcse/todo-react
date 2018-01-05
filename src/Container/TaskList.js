@@ -1,12 +1,25 @@
 import React from 'react';
 import Task from '../Components/Task';
+import { socketConnect } from 'socket.io-react';
 import {connect} from 'react-redux';
 import * as action from '../Actions/action';
 import {bindActionCreators} from 'redux';
 var axios = require('axios');
-var baseUrl = 'http://localhost:3051';
+var baseUrl = 'http://192.168.0.97:3051';
 
 class TaskList extends React.Component{
+  constructor(props){
+    super(props);
+    this.props.socket.on('task-deleted', (deletedTask) => {
+      this.props.actions.deleteTask(deletedTask._id);
+      if(this.props.stateCopy.searchText){
+        this.props.actions.searchTasks(this.props.stateCopy.searchText);
+      }
+    })
+
+  }
+
+
   componentDidMount() {
     this.loadAllTask();
   }
@@ -29,14 +42,10 @@ class TaskList extends React.Component{
 
   deleteTask(_id){
     this.props.actions.changeLoadingState();
-    var taskId = {_id: _id};
-    axios.post(baseUrl+'/delete-task',taskId)
-         .then((response)=>{
-           this.props.actions.deleteTask(response.data.task._id);
-         })
-         .catch((error)=>{
-           alert('Someting wrong happened',error.response);
-         })
+    var data = {_id: _id};
+    this.props.socket.emit('delete-task', data);
+    this.props.actions.deleteTask(_id);
+
   }
 
   viewTask(_id){
@@ -77,4 +86,4 @@ function mapDispatchToProps(dispatch){
 }
 
 
-export default connect(mapStateToProps,mapDispatchToProps)(TaskList);
+export default socketConnect(connect(mapStateToProps,mapDispatchToProps)(TaskList));
